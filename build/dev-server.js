@@ -31,7 +31,7 @@ apiRoutes.get('/seller',function(req,res){
 apiRoutes.get('/goods',function(req,res){
   res.json({
     errno:0,
-    data:seller
+    data:goods
   })
 })
 

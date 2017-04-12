@@ -12,7 +12,7 @@
         <a v-link="{path:'/seller'}">商家</a>
       </div>
     </div>
-    <router-view></router-view>
+    <router-view :seller="seller"></router-view>
   </div>
 </template>
 
@@ -41,7 +41,7 @@
   }
 </script>
 
-<style lang="stylus" rel="stylesheet/stylus">
+<style lang="stylus" rel="stylesheet/stylus" scoped>
     @import "./common/stylus/mixin.styl";
     .tab
       display: flex
