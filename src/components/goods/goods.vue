@@ -15,7 +15,7 @@
         <li v-for="item in goods" class="food-list food-list-hook">
           <h1 class="title">{{item.name}}</h1>
           <ul>
-            <li v-for="food in item.foods" class="food-item border-1px">
+            <li @click="selectFood(food,$event)" v-for="food in item.foods" class="food-item border-1px">
               <div class="icon">
                 <img width="57" height="57" :src="food.icon">
               </div>
@@ -29,19 +29,25 @@
                   <span class="now">￥{{food.price}}</span><span class="old"
                                                                 v-show="food.oldPrice">￥{{food.oldPrice}}</span>
                 </div>
+                <div class="cartcontrol-wrapper">
+                  <cartcontrol :food="food"></cartcontrol>
+                </div>
               </div>
             </li>
           </ul>
         </li>
       </ul>
     </div>
-    <shopcart :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice"></shopcart>
+    <shopcart v-ref:shopcart :select-foods="selectFoods" :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice"></shopcart>
   </div>
+  <food :food="selectedFood" v-ref:food></food>
 </template>
 
 <script type="text/ecmascript-6">
   import BScroll from 'better-scroll';
   import shopcart from 'components/shopcart/shopcart';
+  import cartcontrol from 'components/cartcontrol/cartcontrol'
+  import food from 'components/food/food'
   const ERR_OK = 0;
 
   export default {
@@ -54,7 +60,8 @@
       return {
         goods: [],
         listHeight:[],
-        scrollY:0
+        scrollY:0,
+        selectedFood:{}
       };
     },
     computed:{
@@ -67,6 +74,17 @@
           }
         }
         return 0;
+      },
+      selectFoods(){
+        let foods=[];
+        this.goods.forEach((good)=>{
+          good.foods.forEach((food)=>{
+            if (food.count){
+              foods.push(food);
+            }
+          })
+        })
+        return foods;
       }
     },
     created() {
@@ -84,13 +102,25 @@
       });
     },
     methods: {
-      selectMenu(index,event){
-        if(!event._constructed){
+      selectMenu(index, event){
+        if (!event._constructed) {
           return;
         }
-        let foodList=this.$els.foodsWrapper.getElementsByClassName('food-list-hook');
-        let el=foodList[index];
-        this.foodsScroll.scrollToElement(el,300);
+        let foodList = this.$els.foodsWrapper.getElementsByClassName('food-list-hook');
+        let el = foodList[index];
+        this.foodsScroll.scrollToElement(el, 300);
+      },
+      selectFood(food, event){
+        if (!event._constructed) {
+          return;
+        }
+        this.selectedFood = food;
+        this.$refs.food.show();
+      },
+      _drop(target){
+        this.$nextTick(() => {
+          this.$refs.shopcart.drop(target);
+        })
       },
       _initScroll() {
         this.meunScroll = new BScroll(this.$els.menuWrapper, {
@@ -100,25 +130,32 @@
           click: true,
           probeType: 3
         });
-        this.foodsScroll.on('scroll',(pos)=>{
-          this.scrollY=Math.abs(Math.round(pos.y));
+        this.foodsScroll.on('scroll', (pos) => {
+          this.scrollY = Math.abs(Math.round(pos.y));
         })
       },
       _calculateHeight(){
-        let foodList=this.$els.foodsWrapper.getElementsByClassName('food-list-hook');
-        let height=0;
+        let foodList = this.$els.foodsWrapper.getElementsByClassName('food-list-hook');
+        let height = 0;
         this.listHeight.push(height);
-        for(let i=0;i<foodList.length;i++){
-          let item=foodList[i];
-          height+=item.clientHeight;
+        for (let i = 0; i < foodList.length; i++) {
+          let item = foodList[i];
+          height += item.clientHeight;
           this.listHeight.push(height);
         }
-      }
+      },
     },
     components:{
-      shopcart
+      shopcart,
+      cartcontrol,
+      food
+    },
+    events:{
+      'cart.add'(target){
+        this._drop(target)
+      }
     }
-  };
+  }
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus" scoped>
