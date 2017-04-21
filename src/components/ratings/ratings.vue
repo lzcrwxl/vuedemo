@@ -1,5 +1,7 @@
 <template>
-  <div>I am ratings</div>
+  <div class="ratings">
+    <div class="ratings-content"></div>
+  </div>
 </template>
 
 <script type="text/ecmascript-6">
